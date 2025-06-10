@@ -1,43 +1,39 @@
-# Compiler and flags
-CXX := g++
-CXXFLAGS := -Wall -Wextra -pthread -Iinclude
+CXX = g++
+CXXFLAGS = -std=c++23 -Wall -Wextra -pthread
+INCLUDES = -Iinclude
 
-# Directories
-SRC_DIR := src
-BUILD_DIR := build
-BIN_DIR := bin
+SRCS = src/main.cpp src/SharedMemoryPublisher.cpp src/SharedMemorySubscriber.cpp
+OBJS = $(SRCS:.cpp=.o)
+TARGET = bin/shm_demo
 
-# Source files
-PUBLISHER_SRC := $(SRC_DIR)/publisher.cpp
-SUBSCRIBER_SRC := $(SRC_DIR)/subscriber.cpp
-MAIN_SRC := $(SRC_DIR)/main.cpp
+all: $(TARGET)
 
-# Targets
-PUBLISHER_BIN := $(BIN_DIR)/publisher
-SUBSCRIBER_BIN := $(BIN_DIR)/subscriber
-MAIN_BIN := $(BIN_DIR)/main
+# Create bin directory if it doesn't exist
+$(shell mkdir -p bin)
 
-# Default target
-all: dirs $(PUBLISHER_BIN) $(SUBSCRIBER_BIN) $(MAIN_BIN)
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 
-# Create directories if not exist
-dirs:
-	mkdir -p $(BIN_DIR) $(BUILD_DIR)
+src/main.o: src/main.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-# Compile publisher
-$(PUBLISHER_BIN): $(PUBLISHER_SRC)
-	$(CXX) $(CXXFLAGS) $< -o $@
+src/SharedMemoryPublisher.o: src/SharedMemoryPublisher.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-# Compile subscriber
-$(SUBSCRIBER_BIN): $(SUBSCRIBER_SRC)
-	$(CXX) $(CXXFLAGS) $< -o $@
+src/SharedMemorySubscriber.o: src/SharedMemorySubscriber.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-# Compile main
-$(MAIN_BIN): $(MAIN_SRC)
-	$(CXX) $(CXXFLAGS) $< -o $@
+publisher: src/publisher.cpp src/SharedMemoryPublisher.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/publisher
 
-# Clean build and binaries
+subscriber: src/subscriber.cpp src/SharedMemorySubscriber.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/subscriber
+
 clean:
-	rm -rf $(BIN_DIR) $(BUILD_DIR)
+	rm -f bin/shm_demo bin/publisher bin/subscriber $(OBJS)
 
-.PHONY: all clean dirs
+test:
+	@echo "Testing in simulation"
+	./bin/shm_demo

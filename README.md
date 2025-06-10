@@ -24,3 +24,26 @@ Client/Controller <-> Server/Robot
 - OOP for the nodes
 
 ## Running the Program
+```bash
+# Makefile
+make
+
+# Simulating
+./bin/shm_demo
+# or
+make test
+
+# Running separately
+make publisher
+./bin/publisher
+
+make subscriber
+./bin/subscriber
+
+
+```
+
+## TODO
+- [ ] Parametrize the publisher and subscriber
+    - Rate
+    - Callback function
