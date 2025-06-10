@@ -23,6 +23,18 @@ Client/Controller <-> Server/Robot
 - Publisher - Subscriber
 - OOP for the nodes
 
+## Classes (UpperCase)
+- SharedMemoryPublisher
+- SharedMemorySubscriber
+- PacketSender //interface
+- UDPSender
+- UDPReceiver
+
+## Scripts (lowercase)
+- main (testing script)
+- publisher 
+- subsriber
+
 ## Running the Program
 ```bash
 # Makefile
@@ -72,12 +84,16 @@ Caught signal 2, cleaning up...
 
 ## TODO
 - [ ] Parametrize the publisher and subscriber
-    - Rate
-    - Callback function
+    - Rate -- to be done
+    - Callback function [x]
 - [ ] Raw implementation with threads only
 - [ ] Wrapper to initiate all publishers and subscribers
 - [ ] Make it a reusable library
 - [ ] gRPC interface
+- [ ] webRTC data channels
 - [ ] TCP/UDP packet sender
 - [ ] REST interface for log, kill signals
-- [ ] Monitor/Obsever tool for status
+- [ ] Monitor/Observer tool for status
+- [ ] Multi Sub/Pub node
+- [ ] Pub + Sub node
+- [ ] Tmux bash script for subsystem management

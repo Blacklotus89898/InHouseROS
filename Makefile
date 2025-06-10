@@ -31,8 +31,29 @@ subscriber: src/subscriber.cpp src/SharedMemorySubscriber.cpp
 	@mkdir -p bin
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/subscriber
 
+# UDP sender from subsriber
+sender: src/sender.cpp src/SharedMemorySubscriber.cpp src/comms/UDPSender.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/sender
+
+# UDP receiver -> publisher
+receiver: src/receiver.cpp src/SharedMemoryPublisher.cpp src/comms/UDPReceiver.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/receiver -lpthread
+
+# TCP implementation
+tcpSender: src/tcpSender.cpp src/SharedMemorySubscriber.cpp src/comms/TCPSender.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/tcpSender
+
+# UDP receiver -> publisher
+tcpReceiver: src/tcpReceiver.cpp src/SharedMemoryPublisher.cpp src/comms/TCPReceiver.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/tcpReceiver -lpthread
+
+
 clean:
-	rm -f bin/shm_demo bin/publisher bin/subscriber $(OBJS)
+	rm -f bin/shm_demo bin/publisher bin/subscriber bin/sender bin/receiver $(OBJS)
 
 test:
 	@echo "Testing in simulation"
