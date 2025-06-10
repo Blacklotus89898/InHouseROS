@@ -2,7 +2,7 @@
 #include "SharedMemorySubscriber.hpp"
 int main()
 {
-    const char *shm_name = "/my_shm";
+    const char *shm_name = "/my_shm"; //see it as a topic name, could use threads instead of IPC, but less fault tolerant
     const size_t shm_size = 1024;
 
     // Publishers
@@ -11,10 +11,7 @@ int main()
 
     SharedMemorySubscriber sub(shm_name, shm_size, customCallback);
 
-    // Run all in threads - for simulation (risk of failure)
     sub.run();
-
-    // Join threads
 
     return 0;
 }

@@ -8,8 +8,8 @@
 
 SharedMemorySubscriber* SharedMemorySubscriber::instance_ = nullptr;
 
-SharedMemorySubscriber::SharedMemorySubscriber(const char* shm_name, size_t shm_size, Callback cb)
-    : shm_name_(shm_name), shm_size_(shm_size), ptr_(nullptr), fd_(-1), callback_(cb) {
+SharedMemorySubscriber::SharedMemorySubscriber(const char* shm_name, size_t size, Callback cb, int rate)  
+: shm_name_(shm_name), shm_size_(size), ptr_(nullptr), fd_(-1), callback_(std::move(cb)), rate_(rate) {
     openSharedMemory();
     mapSharedMemory();
     waitForInitialization();
@@ -47,8 +47,10 @@ void SharedMemorySubscriber::waitForInitialization() {
 
 void SharedMemorySubscriber::run() {
     SharedData* d = data();
+    int delta = 1000000 / rate_;
 
     while (true) {
+
         if (pthread_mutex_lock(&d->mutex) != 0) {
             perror("pthread_mutex_lock");
             break;
@@ -64,7 +66,7 @@ void SharedMemorySubscriber::run() {
         }
 
         callback_(std::string(buffer));
-        sleep(1);
+        usleep(delta);
     }
 }
 

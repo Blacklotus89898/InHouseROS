@@ -124,11 +124,21 @@ int main() {
                 cv.notify_all();
             });
 
-            dc->onMessage([](rtc::message_variant msg) {
-                std::visit([](auto&& data) {
+            dc->onMessage([&](rtc::message_variant msg) {
+                std::visit([&](auto&& data) {
                     using T = std::decay_t<decltype(data)>;
-                    if constexpr(std::is_same_v<T, std::string>)
+                    if constexpr(std::is_same_v<T, std::string>) {
                         std::cout << "[Callee] Received message: " << data << std::endl;
+            
+                        std::string response = "Callee echo: " + data;
+            
+                        // Send it back
+                        if (dc && dc->isOpen()) {
+                            dc->send(response);
+                            std::cout << "[Callee] Sent transformed message: " << response << std::endl;
+                        }
+                    }
+                        
                     else if constexpr(std::is_same_v<T, rtc::binary>)
                         std::cout << "[Callee] Received binary message, size: " << data.size() << std::endl;
                 }, msg);

@@ -26,7 +26,7 @@ Client/Controller <-> Server/Robot
 ## Classes (UpperCase)
 - SharedMemoryPublisher
 - SharedMemorySubscriber
-- PacketSender //interface
+- PacketSender
 - UDPSender
 - UDPReceiver
 
@@ -85,6 +85,7 @@ Caught signal 2, cleaning up...
 ## TODO
 - [ ] Parametrize the publisher and subscriber
     - Rate -- to be done
+    - msg type -- to be done
     - Callback function [x]
 - [ ] Raw implementation with threads only
 - [ ] Wrapper to initiate all publishers and subscribers

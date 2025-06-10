@@ -6,7 +6,12 @@ class SharedMemoryPublisher {
 public:
     using Callback = std::function<std::string(int)>;
 
-    SharedMemoryPublisher(const char* shm_name, size_t size, Callback cb);
+
+    SharedMemoryPublisher(
+        const char* shm_name = "/default_shm", 
+        size_t size = 4096, 
+        Callback cb = [](int){ return std::string("default"); }, 
+        int rate = 10);
     ~SharedMemoryPublisher();
 
     void run();
@@ -18,6 +23,7 @@ private:
     int fd_;
     bool is_creator_;
     Callback callback_;
+    int rate_;
 
     static SharedMemoryPublisher* instance_;
 

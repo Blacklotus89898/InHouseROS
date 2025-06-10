@@ -6,12 +6,17 @@
 #include <functional>
 #include <pthread.h>
 #include <cstddef>
+#include <iostream>
 
 class SharedMemorySubscriber {
 public:
     using Callback = std::function<void(const std::string&)>;
 
-    SharedMemorySubscriber(const char* shm_name, size_t size, Callback cb);
+    SharedMemorySubscriber(
+        const char* shm_name = "/default_shm", 
+        size_t size = 4096, 
+        Callback cb = [](const std::string& msg) { std::cout << "Received: " << msg << std::endl; }, 
+        int rate = 10);
     ~SharedMemorySubscriber();
 
     void run();
@@ -22,6 +27,7 @@ private:
     void* ptr_;
     int fd_;
     Callback callback_;
+    int rate_;
 
     static SharedMemorySubscriber* instance_;
 

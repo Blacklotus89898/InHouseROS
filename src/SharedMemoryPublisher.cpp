@@ -17,8 +17,8 @@ struct SharedMemoryPublisher::SharedData {
 
 SharedMemoryPublisher* SharedMemoryPublisher::instance_ = nullptr;
 
-SharedMemoryPublisher::SharedMemoryPublisher(const char* shm_name, size_t size, Callback cb)
-    : shm_name_(shm_name), shm_size_(size), ptr_(nullptr), fd_(-1), is_creator_(false), callback_(std::move(cb)) {
+SharedMemoryPublisher::SharedMemoryPublisher(const char* shm_name, size_t size, Callback cb, int rate)  
+    : shm_name_(shm_name), shm_size_(size), ptr_(nullptr), fd_(-1), is_creator_(false), callback_(std::move(cb)), rate_(rate) {
     openOrCreateSharedMemory();
     mapSharedMemory();
     initMutexIfCreator();
@@ -31,6 +31,7 @@ SharedMemoryPublisher::~SharedMemoryPublisher() {
 
 void SharedMemoryPublisher::run() {
     int count = 0;
+    int delta = 1000000 / rate_;
     while (true) {
         pthread_mutex_lock(&data()->mutex);
 
@@ -41,7 +42,7 @@ void SharedMemoryPublisher::run() {
         pthread_mutex_unlock(&data()->mutex);
 
         std::cout << "[Publisher] Sent: " << msg << std::endl;
-        sleep(1);
+        usleep(delta);
     }
 }
 

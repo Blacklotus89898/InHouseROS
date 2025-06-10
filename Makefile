@@ -53,7 +53,7 @@ tcpReceiver: src/tcpReceiver.cpp src/SharedMemoryPublisher.cpp src/comms/TCPRece
 
 
 clean:
-	rm -f bin/shm_demo bin/publisher bin/subscriber bin/sender bin/receiver $(OBJS)
+	rm -f bin/shm_demo bin/publisher bin/subscriber bin/sender bin/receiver bin/tcpSender bin/tcpReceiver $(OBJS)
 
 test:
 	@echo "Testing in simulation"
