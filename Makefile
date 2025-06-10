@@ -51,9 +51,17 @@ tcpReceiver: src/tcpReceiver.cpp src/SharedMemoryPublisher.cpp src/comms/TCPRece
 	@mkdir -p bin
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/tcpReceiver -lpthread
 
+# Generic pusblisher
+gPub: src/genericPub.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/gPub
+
+gSub: src/genericSub.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o bin/gSub
 
 clean:
-	rm -f bin/shm_demo bin/publisher bin/subscriber bin/sender bin/receiver bin/tcpSender bin/tcpReceiver $(OBJS)
+	rm -f bin/shm_demo bin/publisher bin/subscriber bin/sender bin/receiver bin/tcpSender bin/tcpReceiver bin/gSub bin/gPub $(OBJS)
 
 test:
 	@echo "Testing in simulation"
