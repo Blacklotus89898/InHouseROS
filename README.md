@@ -43,7 +43,41 @@ make subscriber
 
 ```
 
+## Expected output
+```bash
+$ make test
+Testing in simulation
+./bin/shm_demo
+Shared memory initialized. Starting subscriber...
+Shared memory initialized. Starting subscriber...
+[Publisher] Sent: [Pub1] Count: 0
+Sub1 received: [Pub1] Count: 0
+[Publisher] Sent: [Pub2] Msg: 0
+Sub2 received: [Pub2] Msg: 0
+[Publisher] Sent: [Pub1] Count: 1
+Sub1 received: [Pub1] Count: 1
+[Publisher] Sent: [Pub2] Msg: 2
+Sub2 received: [Pub2] Msg: 2
+[Publisher] Sent: [Pub1] Count: 2
+Sub2 received: [Pub1] Count: 2
+Sub1 received: [Pub1] Count: 2
+[Publisher] Sent: [Pub2] Msg: 4
+[Publisher] Sent: [Pub1] Count: 3
+Sub1 received: [Publisher] Sent: [Pub2] Msg: 6
+[Pub1] Count: 3
+Sub2 received: [Pub1] Count: 3
+^C
+Caught signal 2, cleaning up...
+```
+
 ## TODO
 - [ ] Parametrize the publisher and subscriber
     - Rate
     - Callback function
+- [ ] Raw implementation with threads only
+- [ ] Wrapper to initiate all publishers and subscribers
+- [ ] Make it a reusable library
+- [ ] gRPC interface
+- [ ] TCP/UDP packet sender
+- [ ] REST interface for log, kill signals
+- [ ] Monitor/Obsever tool for status
