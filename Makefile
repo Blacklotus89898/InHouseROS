@@ -2,6 +2,7 @@
 CXX = g++
 CXXFLAGS = -std=c++23 -Wall -Wextra -pthread
 INCLUDES = -Iinclude
+DATACHANNEL = -ldatachannel
 
 # Directories
 SRC_DIR = src
@@ -10,6 +11,7 @@ BIN_DIR = bin
 PROG_DIR = $(SRC_DIR)/programs
 PUBSUB_DIR = $(SRC_DIR)/pubSub
 COMMS_DIR = $(SRC_DIR)/comms
+RTC_DIR = $(SRC_DIR)/webrtc
 
 # Create necessary directories
 $(shell mkdir -p $(OBJ_DIR) $(BIN_DIR))
@@ -30,6 +32,8 @@ GPUB_SRCS = $(PROG_DIR)/genericPub.cpp
 GSUB_SRCS = $(PROG_DIR)/genericSub.cpp
 PSUB_SRCS = $(PROG_DIR)/pubSub.cpp
 DUAL_SRCS =  $(PROG_DIR)/dualPubSub.cpp
+RTC_SRCS =  $(PROG_DIR)/webRTCSub.cpp $(RTC_DIR)/WebRTCCallee.cpp
+RTCP_SRCS =  $(PROG_DIR)/webRTCPub.cpp $(RTC_DIR)/WebRTCCallee.cpp
 
 # Default target
 all: $(TARGET)
@@ -69,6 +73,8 @@ $(eval GPUB_OBJS := $(call to_objs,$(GPUB_SRCS)))
 $(eval GSUB_OBJS := $(call to_objs,$(GSUB_SRCS)))
 $(eval PSUB_OBJS := $(call to_objs,$(PSUB_SRCS)))
 $(eval DUAL_OBJS := $(call to_objs,$(DUAL_SRCS)))
+$(eval RTC_OBJS := $(call to_objs,$(RTC_SRCS)))
+$(eval RTCP_OBJS := $(call to_objs,$(RTCP_SRCS)))
 
 # Build other executables
 $(eval $(call build_program,publisher,PUBLISHER,))
@@ -80,7 +86,8 @@ $(eval $(call build_program,tcpReceiver,TCPRECEIVER,-lpthread))
 $(eval $(call build_program,gPub,GPUB,))
 $(eval $(call build_program,gSub,GSUB,))
 $(eval $(call build_program,pubSub,PSUB,))
-$(eval $(call build_program,dual,DUAL,))
+$(eval $(call build_program,rtc,RTC,$(DATACHANNEL)))
+$(eval $(call build_program,rtcp,RTCP,$(DATACHANNEL)))
 
 # Clean target
 .PHONY: clean
@@ -104,6 +111,8 @@ help:
 	@echo "  gSub        Build the generic subscriber"
 	@echo "  pubSub      Build the generic pubSub"
 	@echo "  dual        Build the multi pubSub"
+	@echo "  rtc       	 Build the RTC subscriber-callee"
+	@echo "  rtc       	 Build the RTC publisher-callee"
 	@echo "  clean       Remove all binaries and object files"
 	@echo "  test        Run the shm_demo program"
 	@echo "  help        Show this message"

@@ -16,7 +16,8 @@ public:
     WebRTCCaller(const std::string& serverIp, int port)
         : serverIp(serverIp), port(port), connected(false), dataChannelReady(false), offerReady(false), answerSet(false) {}
 
-    void run() {
+    // Start the connection and signaling
+    void start() {
         rtc::InitLogger(rtc::LogLevel::Info);
 
         rtc::Configuration config;
@@ -37,19 +38,37 @@ public:
         signalingThread = std::thread(&WebRTCCaller::handleSignaling, this);
 
         waitForConnection();
+    }
 
-        if (connected && dataChannelReady) {
-            for (int i = 0; i < 5; i++) {
-                std::string msg = "Hello from caller #" + std::to_string(i);
-                dataChannel->send(msg);
-                std::cout << "[Caller] Sent: " << msg << std::endl;
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-            }
+    // Send a message over the data channel
+    void sendData(const std::string& msg) {
+        if (dataChannel && dataChannel->isOpen()) {
+            dataChannel->send(msg);
+            std::cout << "[Caller] Sent data: " << msg << std::endl;
+        } else {
+            std::cerr << "[Caller] Data channel not open yet!" << std::endl;
+        }
+    }
+
+    // Close connection and cleanup
+    void close() {
+        if (signalingThread.joinable()) {
+            // You may want to signal handleSignaling loop to exit cleanly here
+            // For example, by closing the socket or setting a flag
+            ::shutdown(sock, SHUT_RDWR);
+            signalingThread.join();
         }
 
-        signalingThread.join();
-        close(sock);
-        peerConnection->close();
+        if (sock != -1) {
+            ::close(sock);
+            sock = -1;
+        }
+
+        if (peerConnection) {
+            peerConnection->close();
+            peerConnection.reset();
+        }
+
         std::cout << "[Caller] Shutdown complete." << std::endl;
     }
 
@@ -170,10 +189,35 @@ private:
 int main() {
     try {
         WebRTCCaller caller("127.0.0.1", 9000);
-        caller.run();
+        caller.start();
+
+        std::atomic<bool> running{true};
+
+        // Thread for user input
+        std::thread inputThread([&]() {
+            std::string line;
+            std::cout << "Type messages to send (type 'exit' to quit):\n";
+            while (running) {
+                std::cout << "> ";
+                std::getline(std::cin, line);
+                if (line == "exit") {
+                    running = false;
+                    break;
+                }
+                caller.sendData(line);
+            }
+        });
+
+        // Wait for input thread to finish
+        if (inputThread.joinable())
+            inputThread.join();
+
+        caller.close();
     } catch (const std::exception& e) {
         std::cerr << "[Caller] Exception: " << e.what() << std::endl;
         return 1;
     }
+
     return 0;
 }
+

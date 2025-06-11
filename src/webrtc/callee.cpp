@@ -68,6 +68,15 @@ public:
         std::cout << "[Callee] Shutdown complete." << std::endl;
     }
 
+    void sendData(const std::string& msg) {
+        if (dc && dc->isOpen()) {
+            dc->send(msg);
+            std::cout << "[Callee] Sent data: " << msg << std::endl;
+        } else {
+            std::cerr << "[Callee] Data channel not open yet!" << std::endl;
+        }
+    }
+
 private:
     const int SIGNALING_PORT;
     rtc::Configuration config;
@@ -198,6 +207,7 @@ int main() {
     try {
         WebRTCCallee callee;
         callee.run();
+        callee.sendData("My custom message from outside run()");
     } catch (const std::exception& e) {
         std::cerr << "[Callee] Exception: " << e.what() << std::endl;
         return 1;
