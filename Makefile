@@ -7,85 +7,101 @@ INCLUDES = -Iinclude
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
+PROG_DIR = $(SRC_DIR)/programs
+PUBSUB_DIR = $(SRC_DIR)/pubSub
+COMMS_DIR = $(SRC_DIR)/comms
 
-# Main target sources and objects
-SRCS = $(SRC_DIR)/main.cpp $(SRC_DIR)/SharedMemoryPublisher.cpp $(SRC_DIR)/SharedMemorySubscriber.cpp
-OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
+# Create necessary directories
+$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR))
+
+# Main target
+MAIN_SRCS = $(PROG_DIR)/main.cpp $(PUBSUB_DIR)/SharedMemoryPublisher.cpp $(PUBSUB_DIR)/SharedMemorySubscriber.cpp
+MAIN_OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(subst $(SRC_DIR)/,,$(MAIN_SRCS)))
 TARGET = $(BIN_DIR)/shm_demo
 
-# Other executables sources
-PUBLISHER_SRCS = $(SRC_DIR)/publisher.cpp $(SRC_DIR)/SharedMemoryPublisher.cpp
-SUBSCRIBER_SRCS = $(SRC_DIR)/subscriber.cpp $(SRC_DIR)/SharedMemorySubscriber.cpp
-SENDER_SRCS = $(SRC_DIR)/sender.cpp $(SRC_DIR)/SharedMemorySubscriber.cpp $(SRC_DIR)/comms/UDPSender.cpp
-RECEIVER_SRCS = $(SRC_DIR)/receiver.cpp $(SRC_DIR)/SharedMemoryPublisher.cpp $(SRC_DIR)/comms/UDPReceiver.cpp
-TCPSENDER_SRCS = $(SRC_DIR)/tcpSender.cpp $(SRC_DIR)/SharedMemorySubscriber.cpp $(SRC_DIR)/comms/TCPSender.cpp
-TCPRECEIVER_SRCS = $(SRC_DIR)/tcpReceiver.cpp $(SRC_DIR)/SharedMemoryPublisher.cpp $(SRC_DIR)/comms/TCPReceiver.cpp
-GPUB_SRCS = $(SRC_DIR)/genericPub.cpp
-GSUB_SRCS = $(SRC_DIR)/genericSub.cpp
+# Other programs
+PUBLISHER_SRCS = $(PROG_DIR)/publisher.cpp $(PUBSUB_DIR)/SharedMemoryPublisher.cpp
+SUBSCRIBER_SRCS = $(PROG_DIR)/subscriber.cpp $(PUBSUB_DIR)/SharedMemorySubscriber.cpp
+SENDER_SRCS = $(PROG_DIR)/sender.cpp $(PUBSUB_DIR)/SharedMemorySubscriber.cpp $(COMMS_DIR)/UDPSender.cpp
+RECEIVER_SRCS = $(PROG_DIR)/receiver.cpp $(PUBSUB_DIR)/SharedMemoryPublisher.cpp $(COMMS_DIR)/UDPReceiver.cpp
+TCPSENDER_SRCS = $(PROG_DIR)/tcpSender.cpp $(PUBSUB_DIR)/SharedMemorySubscriber.cpp $(COMMS_DIR)/TCPSender.cpp
+TCPRECEIVER_SRCS = $(PROG_DIR)/tcpReceiver.cpp $(PUBSUB_DIR)/SharedMemoryPublisher.cpp $(COMMS_DIR)/TCPReceiver.cpp
+GPUB_SRCS = $(PROG_DIR)/genericPub.cpp
+GSUB_SRCS = $(PROG_DIR)/genericSub.cpp
 
-# Help target
+# Default target
+all: $(TARGET)
+
+# Pattern rule to compile src/**/*.cpp to obj/**/*.o
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# Link main target
+$(TARGET): $(MAIN_OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
+
+# Function to build secondary binaries
+define build_program
+$$(BIN_DIR)/$1: $$(subst $$(SRC_DIR)/,$$(OBJ_DIR)/,$$(patsubst %.cpp,%.o,$$($2_SRCS)))
+	@mkdir -p $$(dir $$@)
+	$$(CXX) $$(CXXFLAGS) $$(INCLUDES) $$^ -o $$@ $3
+
+.PHONY: $1
+$1: $$(BIN_DIR)/$1
+endef
+
+# Object file mapping
+define to_objs
+$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(1))
+endef
+
+# List of builds
+$(eval PUBLISHER_OBJS := $(call to_objs,$(PUBLISHER_SRCS)))
+$(eval SUBSCRIBER_OBJS := $(call to_objs,$(SUBSCRIBER_SRCS)))
+$(eval SENDER_OBJS := $(call to_objs,$(SENDER_SRCS)))
+$(eval RECEIVER_OBJS := $(call to_objs,$(RECEIVER_SRCS)))
+$(eval TCPSENDER_OBJS := $(call to_objs,$(TCPSENDER_SRCS)))
+$(eval TCPRECEIVER_OBJS := $(call to_objs,$(TCPRECEIVER_SRCS)))
+$(eval GPUB_OBJS := $(call to_objs,$(GPUB_SRCS)))
+$(eval GSUB_OBJS := $(call to_objs,$(GSUB_SRCS)))
+
+# Build other executables
+$(eval $(call build_program,publisher,PUBLISHER,))
+$(eval $(call build_program,subscriber,SUBSCRIBER,))
+$(eval $(call build_program,sender,SENDER,))
+$(eval $(call build_program,receiver,RECEIVER,-lpthread))
+$(eval $(call build_program,tcpSender,TCPSENDER,))
+$(eval $(call build_program,tcpReceiver,TCPRECEIVER,-lpthread))
+$(eval $(call build_program,gPub,GPUB,))
+$(eval $(call build_program,gSub,GSUB,))
+
+# Clean target
+.PHONY: clean
+clean:
+	rm -rf $(OBJ_DIR) $(BIN_DIR)/*
+
+# Help message
 .PHONY: help
 help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all         Build the main program ($(TARGET))"
-	@echo "  publisher   Build the publisher executable"
-	@echo "  subscriber  Build the subscriber executable"
-	@echo "  sender      Build the UDP sender executable"
-	@echo "  receiver    Build the UDP receiver executable"
-	@echo "  tcpSender   Build the TCP sender executable"
-	@echo "  tcpReceiver Build the TCP receiver executable"
-	@echo "  gPub        Build the generic publisher executable"
-	@echo "  gSub        Build the generic subscriber executable"
-	@echo "  clean       Remove all build files and binaries"
-	@echo "  test        Run the main program for testing"
-	@echo "  help        Show this help message"
+	@echo "  all         Build the main shm_demo binary"
+	@echo "  publisher   Build the publisher binary"
+	@echo "  subscriber  Build the subscriber binary"
+	@echo "  sender      Build the UDP sender"
+	@echo "  receiver    Build the UDP receiver"
+	@echo "  tcpSender   Build the TCP sender"
+	@echo "  tcpReceiver Build the TCP receiver"
+	@echo "  gPub        Build the generic publisher"
+	@echo "  gSub        Build the generic subscriber"
+	@echo "  clean       Remove all binaries and object files"
+	@echo "  test        Run the shm_demo program"
+	@echo "  help        Show this message"
 
-# Default target
-all: $(TARGET)
-
-# Create bin and obj directories if they don't exist
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
-
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
-
-# Pattern rule to compile any .cpp in src/ to .o in obj/
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-# Link main target
-$(TARGET): $(OBJS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
-
-# Utility function to build arbitrary executables with dependency lists
-define build_executable
-$1: $($(2)_SRCS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $($(2)_SRCS) -o $(BIN_DIR)/$1
-endef
-
-# Build other executables
-$(eval $(call build_executable,publisher,PUBLISHER))
-$(eval $(call build_executable,subscriber,SUBSCRIBER))
-$(eval $(call build_executable,sender,SENDER))
-$(eval $(call build_executable,receiver,RECEIVER))
-$(eval $(call build_executable,tcpSender,TCPSENDER))
-$(eval $(call build_executable,tcpReceiver,TCPRECEIVER))
-$(eval $(call build_executable,gPub,GPUB))
-$(eval $(call build_executable,gSub,GSUB))
-
-# Clean up generated files and binaries
-.PHONY: clean
-clean:
-	rm -f $(OBJ_DIR)/*.o
-	rm -f $(BIN_DIR)/shm_demo $(BIN_DIR)/publisher $(BIN_DIR)/subscriber \
-		$(BIN_DIR)/sender $(BIN_DIR)/receiver $(BIN_DIR)/tcpSender $(BIN_DIR)/tcpReceiver \
-		$(BIN_DIR)/gSub $(BIN_DIR)/gPub
-
-# Test target to run main program
+# Test target
 .PHONY: test
 test: $(TARGET)
-	@echo "Running simulation test..."
+	@echo "Running shm_demo..."
 	@./$(TARGET)

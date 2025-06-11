@@ -23,14 +23,24 @@ Client/Controller <-> Server/Robot
 - Publisher - Subscriber
 - OOP for the nodes
 
-## Classes (UpperCase)
-- SharedMemoryPublisher
-- SharedMemorySubscriber
+## Headers inside include
 - PacketSender
-- UDPSender
-- UDPReceiver
 
-## Scripts (lowercase)
+## Classes (UpperCase) inside src
+- pub-sub
+    - SharedMemoryPublisher
+    - SharedMemorySubscriber
+
+- comms
+    - UDPSender
+    - UDPReceiver
+    - tcp
+    
+- webrtc
+    - caller
+    - callee
+
+## Function entrypoints inside programs
 - main (testing script)
 - publisher 
 - subsriber
@@ -83,10 +93,10 @@ Caught signal 2, cleaning up...
 ```
 
 ## TODO
-- [ ] Parametrize the publisher and subscriber
-    - Rate -- to be done
-    - msg type -- to be done
-    - Callback function [x]
+- [x] Parametrize the publisher and subscriber
+    - Rate -- to be [done]
+    - msg type -- to be done [done]
+    - Callback function [done]
 - [ ] Raw implementation with threads only
 - [ ] Wrapper to initiate all publishers and subscribers
 - [ ] Make it a reusable library
