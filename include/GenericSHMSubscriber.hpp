@@ -9,26 +9,27 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <cstring>
+#include <stdexcept>
 
 template<typename T>
 class GenericSHMSubscriber {
 public:
     using Callback = std::function<void(const T&)>;
 
-    GenericSHMSubscriber(const char* shm_name, size_t shm_size, Callback cb)
-        : shm_name_(shm_name), shm_size_(shm_size), callback_(std::move(cb)) {
+    GenericSHMSubscriber(const char* shm_name, size_t shm_size, Callback cb, int rate = 10)
+        : shm_name_(shm_name), shm_size_(shm_size), callback_(std::move(cb)), rate_(rate) {
         openSharedMemory();
         mapSharedMemory();
         waitUntilInitialized();
     }
 
     ~GenericSHMSubscriber() {
-        if (ptr_) munmap(ptr_, shm_size_);
-        if (fd_ != -1) close(fd_);
+        cleanup();
     }
 
     void run() {
-        while (true) {
+        int delay_us = 1000000 / rate_;
+        while (running_) {
             pthread_mutex_lock(&data()->mutex);
 
             T msg;
@@ -37,8 +38,12 @@ public:
             pthread_mutex_unlock(&data()->mutex);
 
             callback_(msg);
-            usleep(100000);  // 10Hz polling rate
+            usleep(delay_us); //polling delay
         }
+    }
+
+    void stop() {
+        running_ = false;
     }
 
 private:
@@ -53,6 +58,8 @@ private:
     void* ptr_ = nullptr;
     int fd_ = -1;
     Callback callback_;
+    std::atomic<bool> running_ = true;
+    int rate_;
 
     void openSharedMemory() {
         fd_ = shm_open(shm_name_, O_RDWR, 0666);
@@ -78,5 +85,17 @@ private:
 
     SharedData* data() {
         return reinterpret_cast<SharedData*>(ptr_);
+    }
+
+    void cleanup() {
+        if (ptr_) {
+            munmap(ptr_, shm_size_);
+            ptr_ = nullptr;
+        }
+        if (fd_ != -1) {
+            close(fd_);
+            fd_ = -1;
+        }
+        // Subscriber does NOT call shm_unlink — only publishers do that
     }
 };

@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <string>
-#include <csignal>
 #include <atomic>
 #include <pthread.h>
 #include <fcntl.h>
@@ -10,6 +9,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstring>
+#include <stdexcept>
 
 template<typename T>
 class GenericSHMPublisher {
@@ -21,7 +21,6 @@ public:
         openOrCreateSharedMemory();
         mapSharedMemory();
         initMutexIfCreator();
-        setupSignalHandlers();
     }
 
     ~GenericSHMPublisher() {
@@ -30,8 +29,9 @@ public:
 
     void run() {
         int count = 0;
-        int delta = 1000000 / rate_;
-        while (true) {
+        int delay_us = 1000000 / rate_;
+
+        while (running_) {
             pthread_mutex_lock(&data()->mutex);
 
             T msg = callback_(count++);
@@ -40,8 +40,12 @@ public:
             pthread_mutex_unlock(&data()->mutex);
 
             std::cout << "[Publisher] Sent message of size " << sizeof(T) << std::endl;
-            usleep(delta);
+            usleep(delay_us);
         }
+    }
+
+    void stop() {
+        running_ = false;
     }
 
 private:
@@ -58,8 +62,11 @@ private:
     bool is_creator_ = false;
     Callback callback_;
     int rate_;
+    std::atomic<bool> running_ = true;
 
-    static GenericSHMPublisher<T>* instance_;
+    SharedData* data() {
+        return reinterpret_cast<SharedData*>(ptr_);
+    }
 
     void openOrCreateSharedMemory() {
         fd_ = shm_open(shm_name_, O_CREAT | O_EXCL | O_RDWR, 0666);
@@ -68,11 +75,19 @@ private:
             ftruncate(fd_, shm_size_);
         } else {
             fd_ = shm_open(shm_name_, O_RDWR, 0666);
+            if (fd_ < 0) {
+                perror("shm_open");
+                throw std::runtime_error("Failed to open shared memory");
+            }
         }
     }
 
     void mapSharedMemory() {
         ptr_ = mmap(nullptr, shm_size_, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0);
+        if (ptr_ == MAP_FAILED) {
+            perror("mmap");
+            throw std::runtime_error("Failed to mmap shared memory");
+        }
     }
 
     void initMutexIfCreator() {
@@ -91,31 +106,22 @@ private:
         }
     }
 
-    SharedData* data() {
-        return reinterpret_cast<SharedData*>(ptr_);
-    }
-
     void cleanup() {
-        if (ptr_) munmap(ptr_, shm_size_);
-        if (fd_ != -1) close(fd_);
-        if (is_creator_) shm_unlink(shm_name_);
-    }
-
-    static void signalHandler(int) {
-        if (instance_) instance_->cleanup();
-        exit(0);
-    }
-
-    void setupSignalHandlers() {
-        instance_ = this;
-        struct sigaction sa;
-        sa.sa_handler = signalHandler;
-        sigemptyset(&sa.sa_mask);
-        sa.sa_flags = 0;
-        sigaction(SIGINT, &sa, nullptr);
-        sigaction(SIGTERM, &sa, nullptr);
+        if (ptr_) {
+            munmap(ptr_, shm_size_);
+            ptr_ = nullptr;
+        }
+        if (fd_ != -1) {
+            close(fd_);
+            fd_ = -1;
+        }
+        if (is_creator_) {
+            if (shm_unlink(shm_name_) == 0) {
+                std::cout << "Unlinked shared memory: " << shm_name_ << std::endl;
+            } else {
+                perror("shm_unlink");
+            }
+            is_creator_ = false;
+        }
     }
 };
-
-template<typename T>
-GenericSHMPublisher<T>* GenericSHMPublisher<T>::instance_ = nullptr;

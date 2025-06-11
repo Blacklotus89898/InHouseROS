@@ -35,12 +35,12 @@ Client/Controller <-> Server/Robot
     - UDPSender
     - UDPReceiver
     - tcp
-    
+
 - webrtc
     - caller
     - callee
 
-## Function entrypoints inside programs
+## Function entrypoints (exapmples) inside programs
 - main (testing script)
 - publisher 
 - subsriber
@@ -55,13 +55,15 @@ make
 # or
 make test
 
-# Running separately
+# Running others
 make publisher
 ./bin/publisher
 
 make subscriber
 ./bin/subscriber
 
+# Getting help
+make help
 
 ```
 

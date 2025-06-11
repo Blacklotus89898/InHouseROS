@@ -28,6 +28,8 @@ TCPSENDER_SRCS = $(PROG_DIR)/tcpSender.cpp $(PUBSUB_DIR)/SharedMemorySubscriber.
 TCPRECEIVER_SRCS = $(PROG_DIR)/tcpReceiver.cpp $(PUBSUB_DIR)/SharedMemoryPublisher.cpp $(COMMS_DIR)/TCPReceiver.cpp
 GPUB_SRCS = $(PROG_DIR)/genericPub.cpp
 GSUB_SRCS = $(PROG_DIR)/genericSub.cpp
+PSUB_SRCS = $(PROG_DIR)/pubSub.cpp
+DUAL_SRCS =  $(PROG_DIR)/dualPubSub.cpp
 
 # Default target
 all: $(TARGET)
@@ -65,6 +67,8 @@ $(eval TCPSENDER_OBJS := $(call to_objs,$(TCPSENDER_SRCS)))
 $(eval TCPRECEIVER_OBJS := $(call to_objs,$(TCPRECEIVER_SRCS)))
 $(eval GPUB_OBJS := $(call to_objs,$(GPUB_SRCS)))
 $(eval GSUB_OBJS := $(call to_objs,$(GSUB_SRCS)))
+$(eval PSUB_OBJS := $(call to_objs,$(PSUB_SRCS)))
+$(eval DUAL_OBJS := $(call to_objs,$(DUAL_SRCS)))
 
 # Build other executables
 $(eval $(call build_program,publisher,PUBLISHER,))
@@ -75,6 +79,8 @@ $(eval $(call build_program,tcpSender,TCPSENDER,))
 $(eval $(call build_program,tcpReceiver,TCPRECEIVER,-lpthread))
 $(eval $(call build_program,gPub,GPUB,))
 $(eval $(call build_program,gSub,GSUB,))
+$(eval $(call build_program,pubSub,PSUB,))
+$(eval $(call build_program,dual,DUAL,))
 
 # Clean target
 .PHONY: clean
@@ -96,6 +102,8 @@ help:
 	@echo "  tcpReceiver Build the TCP receiver"
 	@echo "  gPub        Build the generic publisher"
 	@echo "  gSub        Build the generic subscriber"
+	@echo "  pubSub      Build the generic pubSub"
+	@echo "  dual        Build the multi pubSub"
 	@echo "  clean       Remove all binaries and object files"
 	@echo "  test        Run the shm_demo program"
 	@echo "  help        Show this message"
