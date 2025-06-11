@@ -39,11 +39,17 @@ Client/Controller <-> Server/Robot
 - webrtc
     - caller
     - callee
+    - WebRTCCaller
+    - WebRTCCallee
 
 ## Function entrypoints (exapmples) inside programs
 - main (testing script)
 - publisher 
 - subsriber
+- dual
+- pubSub
+- receiver / sender
+- webrtc/caller, callee (webrtc only)
 
 ## Running the Program
 ```bash
@@ -100,13 +106,13 @@ Caught signal 2, cleaning up...
     - msg type -- to be done [done]
     - Callback function [done]
 - [ ] Raw implementation with threads only
-- [ ] Wrapper to initiate all publishers and subscribers
+- [x] Wrapper to initiate all publishers and subscribers
 - [ ] Make it a reusable library
 - [ ] gRPC interface
-- [ ] webRTC data channels
-- [ ] TCP/UDP packet sender
+- [x] webRTC data channels
+- [x] TCP/UDP packet sender
 - [ ] REST interface for log, kill signals
 - [ ] Monitor/Observer tool for status
-- [ ] Multi Sub/Pub node
-- [ ] Pub + Sub node
+- [x] Multi Sub/Pub node
+- [x] Pub + Sub node
 - [ ] Tmux bash script for subsystem management
