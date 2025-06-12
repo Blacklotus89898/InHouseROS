@@ -110,9 +110,11 @@ Caught signal 2, cleaning up...
 - [ ] Make it a reusable library
 - [ ] gRPC interface
 - [x] webRTC data channels
+    - webrtc with different data types
 - [x] TCP/UDP packet sender
 - [ ] REST interface for log, kill signals
 - [ ] Monitor/Observer tool for status
 - [x] Multi Sub/Pub node
 - [x] Pub + Sub node
 - [ ] Tmux bash script for subsystem management
+- [ ] TCP/UDP/WebRTC video stream
