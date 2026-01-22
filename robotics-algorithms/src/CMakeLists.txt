@@ -6,6 +6,7 @@ add_library(robotics_core
     planning/graph_search/astar.cpp  # <--- NEW
     localization/kalman_filter_1d.cpp # <--- NEW
     kinematics/two_link_arm.cpp  # <--- NEW
+    decision/fsm/state_machine.cpp
     # We will add pid.cpp, astar.cpp here later...
 )
 

@@ -27,4 +27,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
   add_executable(arm_kinematics_demo arm_kinematics_demo.cpp)
   target_link_libraries(arm_kinematics_demo PRIVATE robotics_core)
 
+  add_executable(state_machine_demo state_machine_demo.cpp)
+  target_link_libraries(state_machine_demo PRIVATE robotics_core)
 endif()
