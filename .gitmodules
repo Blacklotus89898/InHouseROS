@@ -1,0 +1,3 @@
+[submodule "robotics-algorithms/third_party/Eigen"]
+	path = robotics-algorithms/third_party/Eigen
+	url = https://gitlab.com/libeigen/eigen.git
