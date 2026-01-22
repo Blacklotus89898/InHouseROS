@@ -1,10 +1,12 @@
-# Define the main library
+# Define the library source files
 add_library(robotics_core
-    common/math_utils.cpp 
-    # Add future files here...
+    common/math_utils.cpp
+    control/pid.cpp
+    # We will add pid.cpp, astar.cpp here later...
 )
 
-# Allow the library to see public headers
+# Tell the compiler where to find the header files (.hpp)
+# We also include Eigen here so the library can find it
 target_include_directories(robotics_core PUBLIC 
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/third_party/Eigen

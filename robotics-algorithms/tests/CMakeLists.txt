@@ -1,6 +1,7 @@
 # Define the test executable
 add_executable(unit_tests 
     test_math.cpp
+    test_pid.cpp
     # Add future test files here, e.g., test_planning.cpp
 )
 

@@ -1,11 +1,15 @@
 #include "robotics_algo/common/types.hpp"
-#include <iostream>
+#include <cmath>
 
-namespace robotics {
-    
-    // Just a placeholder function to ensure the lib builds
-    void print_version() {
-        std::cout << "Robotics Algo Lib v1.0" << std::endl;
+namespace robotics::math {
+
+    Scalar normalize_angle(Scalar angle) {
+        // Use standard formula to wrap angle between -PI and PI
+        angle = std::fmod(angle + PI, 2.0 * PI);
+        if (angle < 0.0) {
+            angle += 2.0 * PI;
+        }
+        return angle - PI;
     }
 
 }
