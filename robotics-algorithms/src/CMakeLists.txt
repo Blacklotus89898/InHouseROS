@@ -2,6 +2,7 @@
 add_library(robotics_core
     common/math_utils.cpp
     control/pid.cpp
+    simulators/viz/graph_visualizer.cpp
     # We will add pid.cpp, astar.cpp here later...
 )
 
@@ -11,3 +12,10 @@ target_include_directories(robotics_core PUBLIC
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/third_party/Eigen
 )
+
+
+find_package(SDL2)
+if(SDL2_FOUND)
+    target_link_libraries(robotics_core PRIVATE ${SDL2_LIBRARIES})
+    target_include_directories(robotics_core PRIVATE ${SDL2_INCLUDE_DIRS})
+endif()

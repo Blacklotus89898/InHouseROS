@@ -9,4 +9,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
   # New demo stuff
   add_executable(control_demo control_demo.cpp)
   target_link_libraries(control_demo PRIVATE robotics_core)
+
+  add_executable(pid_visualizer pid_visualizer.cpp)
+  target_link_libraries(pid_visualizer PRIVATE robotics_core)
 endif()
