@@ -20,4 +20,8 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
 
   add_executable(astar_visualizer astar_visualizer.cpp)
   target_link_libraries(astar_visualizer PRIVATE robotics_core)
+
+    add_executable(kalman_demo kalman_demo.cpp)
+  target_link_libraries(kalman_demo PRIVATE robotics_core)
+
 endif()

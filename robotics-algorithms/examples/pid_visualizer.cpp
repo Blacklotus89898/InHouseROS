@@ -20,7 +20,10 @@ int main() {
         current += velocity * dt;
 
         // Render (One line!)
-        viz.update(target, current);
+        viz.update(
+        {target, current}, 
+        { {200, 50, 50}, {50, 200, 50} } // Red (Target), Green (Actual)
+    );
         
         // Optional: Manual Reset logic here if you want to hook into viz key events
         // But the class handles SPACE bar clearing internally now.

@@ -4,6 +4,7 @@ add_library(robotics_core
     control/pid.cpp
     simulators/viz/graph_visualizer.cpp
     planning/graph_search/astar.cpp  # <--- NEW
+    localization/kalman_filter_1d.cpp # <--- NEW
     # We will add pid.cpp, astar.cpp here later...
 )
 
