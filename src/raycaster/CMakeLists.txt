@@ -11,16 +11,20 @@ find_package(SDL2 REQUIRED)
 # Replace "raycaster.cpp" with your actual file name if different
 add_executable(raycaster raycaster.cpp)
 add_executable(raycaster2 raycaster_advanced.cpp)
+add_executable(slam slam.cpp)
 
 # Link SDL2
 if (WIN32)
     # Windows usually creates the targets SDL2::SDL2 and SDL2::SDL2main
     target_link_libraries(raycaster PRIVATE SDL2::SDL2 SDL2::SDL2main)
     target_link_libraries(raycaster2 PRIVATE SDL2::SDL2 SDL2::SDL2main)
+    target_link_libraries(slam PRIVATE SDL2::SDL2 SDL2::SDL2main)
 else()
     # Linux/macOS often uses the variable method
     target_include_directories(raycaster PRIVATE ${SDL2_INCLUDE_DIRS})
     target_link_libraries(raycaster PRIVATE ${SDL2_LIBRARIES})
     target_include_directories(raycaster2 PRIVATE ${SDL2_INCLUDE_DIRS})
     target_link_libraries(raycaster2 PRIVATE ${SDL2_LIBRARIES})
+    target_include_directories(slam PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(slam PRIVATE ${SDL2_LIBRARIES})
 endif()
