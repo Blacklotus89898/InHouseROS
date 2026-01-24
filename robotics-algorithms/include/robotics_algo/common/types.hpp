@@ -27,6 +27,16 @@ namespace robotics {
         Pose2D(Scalar x, Scalar y, Scalar th) : position(x, y), theta(th) {}
     };
 
+    struct Pose3D {
+        Vector3 position;
+        // For simplicity in this demo, we won't use a Quaternion for rotation yet.
+        // We'll just assume the robot looks "forward".
+        Vector3 orientation; // Euler angles or direction vector
+
+        Pose3D() : position(0,0,0) {}
+        Pose3D(Vector3 p) : position(p) {}
+    };
+
     // 5. Common Utility Functions Declarations
     namespace math {
         // Normalizes an angle to be within [-PI, PI]

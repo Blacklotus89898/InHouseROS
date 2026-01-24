@@ -8,6 +8,9 @@ add_library(robotics_core
     kinematics/two_link_arm.cpp  # <--- NEW
     decision/fsm/state_machine.cpp
     planning/sampling_based/rrt.cpp
+    perception/voxel_grid.cpp
+    perception/occupancy_grid.cpp
+
     # We will add pid.cpp, astar.cpp here later...
 )
 

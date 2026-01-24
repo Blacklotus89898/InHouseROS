@@ -32,4 +32,10 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
 
   add_executable(rrt_demo rrt_demo.cpp)
   target_link_libraries(rrt_demo PRIVATE robotics_core)
+
+  add_executable(voxel_demo voxel_demo.cpp)
+  target_link_libraries(voxel_demo PRIVATE robotics_core)
+
+  add_executable(mapping_demo mapping_demo.cpp)
+  target_link_libraries(mapping_demo PRIVATE robotics_core)
 endif()
