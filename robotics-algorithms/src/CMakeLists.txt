@@ -10,6 +10,8 @@ add_library(robotics_core
     planning/sampling_based/rrt.cpp
     perception/voxel_grid.cpp
     perception/occupancy_grid.cpp
+    control/pure_pursuit.cpp
+    localization/particle_filter.cpp
 
     # We will add pid.cpp, astar.cpp here later...
 )

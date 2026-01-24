@@ -38,4 +38,10 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
 
   add_executable(mapping_demo mapping_demo.cpp)
   target_link_libraries(mapping_demo PRIVATE robotics_core)
+  
+  add_executable(navigation_demo navigation_demo.cpp)
+  target_link_libraries(navigation_demo PRIVATE robotics_core)
+
+  add_executable(pf_demo pf_demo.cpp)
+  target_link_libraries(pf_demo PRIVATE robotics_core)
 endif()
