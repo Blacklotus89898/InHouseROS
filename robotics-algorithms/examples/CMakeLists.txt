@@ -44,4 +44,15 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
 
   add_executable(pf_demo pf_demo.cpp)
   target_link_libraries(pf_demo PRIVATE robotics_core)
+
+  add_executable(arm_3d_demo arm_3d_demo.cpp)
+  target_link_libraries(arm_3d_demo PRIVATE robotics_core)
+
+    add_executable(n_arm_demo n_arm_demo.cpp)
+  target_link_libraries(n_arm_demo PRIVATE robotics_core)
+
+      add_executable(six_dof_demo six_dof_demo.cpp)
+  target_link_libraries(six_dof_demo PRIVATE robotics_core)
+
+
 endif()

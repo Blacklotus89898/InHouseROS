@@ -14,6 +14,8 @@ namespace robotics {
     using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
     using Matrix2 = Eigen::Matrix<Scalar, 2, 2>;
     using Matrix3 = Eigen::Matrix<Scalar, 3, 3>;
+    using Vector4 = Eigen::Matrix<Scalar, 4, 1>;
+    using Matrix4 = Eigen::Matrix<Scalar, 4, 4>;
 
     // 3. Constants
     constexpr Scalar PI = 3.14159265358979323846;
