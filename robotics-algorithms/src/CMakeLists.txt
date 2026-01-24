@@ -7,6 +7,7 @@ add_library(robotics_core
     localization/kalman_filter_1d.cpp # <--- NEW
     kinematics/two_link_arm.cpp  # <--- NEW
     decision/fsm/state_machine.cpp
+    planning/sampling_based/rrt.cpp
     # We will add pid.cpp, astar.cpp here later...
 )
 
