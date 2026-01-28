@@ -38,7 +38,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
 
   add_executable(mapping_demo mapping_demo.cpp)
   target_link_libraries(mapping_demo PRIVATE robotics_core)
-  
+
   add_executable(navigation_demo navigation_demo.cpp)
   target_link_libraries(navigation_demo PRIVATE robotics_core)
 
@@ -48,11 +48,18 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hello_robotics.cpp")
   add_executable(arm_3d_demo arm_3d_demo.cpp)
   target_link_libraries(arm_3d_demo PRIVATE robotics_core)
 
-    add_executable(n_arm_demo n_arm_demo.cpp)
+  add_executable(n_arm_demo n_arm_demo.cpp)
   target_link_libraries(n_arm_demo PRIVATE robotics_core)
 
-      add_executable(six_dof_demo six_dof_demo.cpp)
+  add_executable(six_dof_demo six_dof_demo.cpp)
   target_link_libraries(six_dof_demo PRIVATE robotics_core)
 
+  add_executable(prm_demo prm_demo.cpp)
+  target_link_libraries(prm_demo PRIVATE robotics_core)
 
+  add_executable(rrt_star rrt_star.cpp)
+  target_link_libraries(rrt_star PRIVATE robotics_core)
+
+  add_executable(mpc_demo mpc_demo.cpp)
+  target_link_libraries(mpc_demo PRIVATE robotics_core)
 endif()

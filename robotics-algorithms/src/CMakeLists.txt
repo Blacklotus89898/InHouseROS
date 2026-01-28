@@ -8,6 +8,7 @@ add_library(robotics_core
     kinematics/two_link_arm.cpp  # <--- NEW
     decision/fsm/state_machine.cpp
     planning/sampling_based/rrt.cpp
+    planning/sampling_based/rrt_star.cpp
     perception/voxel_grid.cpp
     perception/occupancy_grid.cpp
     control/pure_pursuit.cpp
@@ -15,6 +16,8 @@ add_library(robotics_core
     kinematics/arm_3d.cpp
     kinematics/n_link_arm.cpp
     kinematics/six_link_arm.cpp
+    planning/sampling_based/prm.cpp
+    control/mpc.cpp
 
     # We will add pid.cpp, astar.cpp here later...
 )
