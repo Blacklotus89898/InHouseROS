@@ -1,5 +1,7 @@
 #include "ihrs/ipc/shm_publisher.hpp"
 
+#include "ihrs/ipc/detail/robust_mutex.hpp"
+
 #include <cerrno>
 #include <csignal>
 #include <cstring>
@@ -41,7 +43,12 @@ void SharedMemoryPublisher::run() {
 
     while (running_.load(std::memory_order_relaxed) &&
            !signal_stop_.load(std::memory_order_relaxed)) {
-        pthread_mutex_lock(&data()->mutex);
+        const auto lock_rc = detail::lock(data()->mutex);
+        if (lock_rc == detail::LockStatus::Error) {
+            break;
+        }
+        // RecoveredAfterOwnerDeath is safe here: we overwrite the whole
+        // message below, so torn data from the dead owner is replaced.
 
         const std::string msg = callback_(count++);
         std::strncpy(data()->message, msg.c_str(), sizeof(data()->message) - 1);
@@ -86,6 +93,7 @@ void SharedMemoryPublisher::initMutexIfCreator() {
         pthread_mutexattr_t attr;
         pthread_mutexattr_init(&attr);
         pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+        detail::set_robust_attr(attr);
         pthread_mutex_init(&data()->mutex, &attr);
         pthread_mutexattr_destroy(&attr);
 

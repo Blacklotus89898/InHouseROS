@@ -60,7 +60,7 @@ void TCPReceiver::run() {
             break; // peer closed or stop() shut the socket down
         }
         buffer[n] = '\0';
-        callback_(std::string(buffer));
+        callback_(std::string(buffer, static_cast<std::size_t>(n))); // binary-safe
     }
 
     std::cout << "[TCPReceiver] Client disconnected\n";

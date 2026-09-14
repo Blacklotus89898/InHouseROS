@@ -1,10 +1,11 @@
 #include "ihrs/core/broker.hpp"
 
+#include "ihrs/core/context.hpp"
+
 namespace ihrs::core {
 
 Broker& Broker::instance() {
-  static Broker b;
-  return b;
+    return Context::global().broker();
 }
 
 Broker::Token Broker::subscribe(const std::string& topic, Callback cb) {

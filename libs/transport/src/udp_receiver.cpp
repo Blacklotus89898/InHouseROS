@@ -52,7 +52,7 @@ void UDPReceiver::run() {
             continue;
         }
         buffer[n] = '\0';
-        callback_(std::string(buffer));
+        callback_(std::string(buffer, static_cast<std::size_t>(n))); // binary-safe
     }
 }
 

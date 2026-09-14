@@ -4,6 +4,8 @@
 #include <string>
 #include <atomic>
 #include <pthread.h>
+
+#include "ihrs/ipc/detail/robust_mutex.hpp"
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -34,7 +36,12 @@ public:
         int delay_us = 1000000 / rate_;
 
         while (running_) {
-            pthread_mutex_lock(&data()->mutex);
+            const auto lock_rc = detail::lock(data()->mutex);
+            if (lock_rc == detail::LockStatus::Error) {
+                break;
+            }
+            // RecoveredAfterOwnerDeath is safe: the payload is fully
+            // overwritten below.
 
             T msg = callback_(count++);
             std::memcpy(&data()->payload, &msg, sizeof(T));
@@ -97,6 +104,7 @@ private:
             pthread_mutexattr_t attr;
             pthread_mutexattr_init(&attr);
             pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+            detail::set_robust_attr(attr);
             pthread_mutex_init(&data()->mutex, &attr);
             pthread_mutexattr_destroy(&attr);
 

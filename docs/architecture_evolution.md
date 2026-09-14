@@ -190,7 +190,7 @@ flowchart LR
 
 | Stage | Delivers | Size |
 | :- | :- | :- |
-| **1 — Foundations** | `Context` (default global), executor timers, byte-span transport + TCP framing, `error()` accessors | S |
+| **1 — Foundations** ✅ *delivered* | `Context` (default global), executor timers, byte-span transport + TCP framing (`framing.hpp`, binary-safe receivers), `last_error()` accessors, robust SHM mutexes | S |
 | **2 — Unified topics** | `Context::create_node()`, typed `Pub<T>`/`Sub<T>` with QoS depth, `LocalTransport`, type-hash checking, `bridge` app for SHM/net forwarding | M–L |
 | **3 — SHM v2** | SPSC ring buffer, seq+timestamp, futex wakeup, liveness epoch; `GenericSHM` kept as compat shim | M |
 | **4 — Discovery & tooling** | Topic registry endpoint, `ihrs topics` CLI, latency/loss counters exposed, optional ZMQ-backed NetTransport | M |

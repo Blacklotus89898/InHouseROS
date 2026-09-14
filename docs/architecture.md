@@ -89,7 +89,7 @@ classDiagram
     }
 
     class Broker {
-        <<singleton per process>>
+        <<one per Context>>
         +subscribe(topic, cb) Token
         +unsubscribe(topic, token) void
         +publish(topic, msg) void
@@ -136,7 +136,7 @@ Key decisions:
 
 | Decision | Rationale |
 | :--- | :--- |
-| Broker is a process singleton | Mirrors ROS 1's global node model; injectable for tests |
+| Broker is owned by a `Context` | `Context::global()` preserves the simple default; local contexts give isolation and DI for tests |
 | RAII `Subscriber` with tokens | Destroying a subscriber can never leave a dangling callback |
 | Bounded queue, drop-oldest | A slow consumer can never block a high-rate publisher; drops are observable via `droppedCount()` |
 | Callbacks run in `spinOnce()` | Single-threaded execution per process — no callback races, like ROS 1 spin model |
@@ -229,11 +229,15 @@ sequenceDiagram
     S->>S: destructor: munmap only
 ```
 
-Known limitations (tracked in the roadmap): the protocol stores only the
-latest message (no queueing, no liveness tracking), the mutex is not
-robust — a killed publisher leaves the lock held until the segment is
-manually removed — and `run()` polls rather than using condition variables
-on the shared mutex.
+Robustness: all segments use `PTHREAD_MUTEX_ROBUST`. If an owner dies
+while holding the lock, the next locker gets `EOWNERDEAD`, marks the mutex
+consistent, and recovers: publishers overwrite the payload (torn data is
+replaced); subscribers skip the possibly-torn sample and wait for a fresh
+publish.
+
+Remaining limitations (tracked in the roadmap): the protocol stores only
+the latest message (no queueing, no liveness tracking) and `run()` polls
+rather than using condition variables on the shared mutex.
 
 ## 5. Transport layer
 

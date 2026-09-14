@@ -49,7 +49,7 @@ safety), **low** (style/maintainability).
 | :- | :- | :--- | :--- |
 | A1 | low | Demo binaries named generically (`sender`, `receiver`) and colliding conceptually with library concepts | Renamed (`udp_sender`, `tcp_receiver`, `shm_publisher`, ...) |
 | A2 | low | Strict warnings profile (-Wconversion, -Wold-style-cast) floods on the large imported algo codebase | Two-profile policy: strict for new middleware, `ihrs_warnings_legacy` for `ihrs::algo`; documented in architecture doc |
-| A3 | medium | Test presets had no per-test timeout — a hung test stalls `ctest` forever | **Open**: add `gtest_discover_tests(... TIMEOUT 60)` per test (suggested follow-up) |
+| A3 | medium | Test presets had no per-test timeout — a hung test stalls `ctest` forever | **Fixed**: all `gtest_discover_tests` now use `TIMEOUT 60`; CI added (`.github/workflows/ci.yml`, debug/release/sanitize) |
 
 ---
 

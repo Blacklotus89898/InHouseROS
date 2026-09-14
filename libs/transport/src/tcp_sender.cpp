@@ -4,7 +4,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <cstring>
+#include "ihrs/transport/framing.hpp"
 
 namespace ihrs::transport {
 
@@ -13,8 +15,10 @@ TCPSender::~TCPSender() {
 }
 
 bool TCPSender::connect(const std::string& ip, int port) {
+    last_error_ = 0;
     sock_ = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_ < 0) {
+        last_error_ = errno;
         return false;
     }
 
@@ -23,14 +27,29 @@ bool TCPSender::connect(const std::string& ip, int port) {
     addr.sin_port = htons(static_cast<uint16_t>(port));
     inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
 
-    return ::connect(sock_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == 0;
+    if (::connect(sock_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0) {
+        last_error_ = errno;
+        return false;
+    }
+    return true;
 }
 
-bool TCPSender::send(const std::string& data) {
+bool TCPSender::send(std::span<const std::byte> data) {
     if (sock_ < 0) {
         return false;
     }
-    return ::send(sock_, data.c_str(), data.size(), 0) == static_cast<ssize_t>(data.size());
+    const ssize_t rc = ::send(sock_, data.data(), data.size(), 0);
+    if (rc < 0 || static_cast<std::size_t>(rc) != data.size()) {
+        last_error_ = errno;
+        return false;
+    }
+    return true;
+}
+
+bool TCPSender::send_framed(std::span<const std::byte> data) {
+    frame_scratch_.clear();
+    framing::write_frame(frame_scratch_, data);
+    return send(std::span<const std::byte>(frame_scratch_));
 }
 
 void TCPSender::close() {
@@ -38,6 +57,7 @@ void TCPSender::close() {
         ::close(sock_);
         sock_ = -1;
     }
+    last_error_ = 0;
 }
 
 } // namespace ihrs::transport

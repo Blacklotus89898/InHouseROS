@@ -10,4 +10,4 @@ target_link_libraries(ihrs_algo_tests
 )
 
 include(GoogleTest)
-gtest_discover_tests(ihrs_algo_tests)
+gtest_discover_tests(ihrs_algo_tests TIMEOUT 60)

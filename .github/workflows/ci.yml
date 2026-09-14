@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [debug, release, sanitize]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install toolchain deps
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+
+      - name: Configure (${{ matrix.preset }})
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} -j"$(nproc)"
+
+      - name: Test
+        run: |
+          if [ "${{ matrix.preset }}" = "sanitize" ]; then
+            ctest --test-dir build/sanitize --output-on-failure
+          else
+            ctest --preset ${{ matrix.preset }} --output-on-failure
+          fi

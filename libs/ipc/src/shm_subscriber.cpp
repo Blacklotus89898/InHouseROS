@@ -1,5 +1,7 @@
 #include "ihrs/ipc/shm_subscriber.hpp"
 
+#include "ihrs/ipc/detail/robust_mutex.hpp"
+
 #include <pthread.h>
 
 #include <csignal>
@@ -56,8 +58,16 @@ void SharedMemorySubscriber::run() {
 
     while (running_.load(std::memory_order_relaxed) &&
            !signal_stop_.load(std::memory_order_relaxed)) {
-        if (pthread_mutex_lock(&d->mutex) != 0) {
+        const auto lock_rc = detail::lock(d->mutex);
+        if (lock_rc == detail::LockStatus::Error) {
             break;
+        }
+        if (lock_rc == detail::LockStatus::RecoveredAfterOwnerDeath) {
+            // Payload may be torn from the dead owner's interrupted write;
+            // do not deliver it. Unlock and wait for a fresh publish.
+            pthread_mutex_unlock(&d->mutex);
+            usleep(delta);
+            continue;
         }
 
         char buffer[1024];

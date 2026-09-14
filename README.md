@@ -125,9 +125,9 @@ Prioritized; the rationale behind each item is in
 
 - [x] Shared-memory pub/sub with unified wrapper API
 - [x] In-process broker/executor middleware (RAII subscriptions, bounded queue, prompt-stop executor)
-- [x] TCP/UDP transports behind a common `PacketSender` interface with stoppable receivers
+- [x] TCP/UDP transports behind a common `PacketSender` interface with stoppable receivers, binary-safe payloads and length-prefix framing
+- [x] Robust shared-memory mutexes (`EOWNERDEAD` recovery) + CI (GitHub Actions)
 - [x] Robotics algorithm library with tests
-- [ ] Crash-safe SHM mutexes (robust mutex + `EOWNERDEAD` recovery)
 - [ ] Lock-free SHM ring buffer (SPSC, condition-variable wakeup)
 - [ ] Generic `bridge_node` (SHM ↔ core ↔ transport)
 - [ ] gRPC service calls, WebRTC video streaming

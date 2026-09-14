@@ -64,9 +64,10 @@ public:
   void setMaxPending(std::size_t max_pending);
 
 private:
-  Broker() = default;
+    Broker() = default;
+    friend class Context; // only Context may construct a broker
 
-  struct Subscription {
+    struct Subscription {
     Token id;
     Callback cb;
   };

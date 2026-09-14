@@ -5,6 +5,8 @@
 #include <iostream>
 #include <atomic>
 #include <pthread.h>
+
+#include "ihrs/ipc/detail/robust_mutex.hpp"
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -32,7 +34,16 @@ public:
     void run() {
         int delay_us = 1000000 / rate_;
         while (running_) {
-            pthread_mutex_lock(&data()->mutex);
+            const auto lock_rc = detail::lock(data()->mutex);
+            if (lock_rc == detail::LockStatus::Error) {
+                break;
+            }
+            if (lock_rc == detail::LockStatus::RecoveredAfterOwnerDeath) {
+                // Torn payload from the dead owner: skip this cycle.
+                pthread_mutex_unlock(&data()->mutex);
+                usleep(static_cast<useconds_t>(delay_us));
+                continue;
+            }
 
             T msg;
             std::memcpy(&msg, &data()->payload, sizeof(T));

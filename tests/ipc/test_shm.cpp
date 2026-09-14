@@ -6,6 +6,10 @@
 #include <chrono>
 #include <string>
 #include <thread>
+#include <cerrno>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 using namespace ihrs::ipc;
 
@@ -75,4 +79,46 @@ TEST(GenericShmTest, StopReturnsPromptly) {
   const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0);
 
   EXPECT_LT(elapsed.count(), 2.0);
+}
+
+// Validates the platform behavior our robust-mutex recovery relies on:
+// a lock owner that dies while holding a PTHREAD_MUTEX_ROBUST yields
+// EOWNERDEAD to the next locker, which must mark the mutex consistent
+// before unlocking. (The IPC classes use exactly this pattern via
+// detail::robust_mutex.hpp; exercising it end-to-end would require
+// SIGKILLing a real process, which is not ctest-friendly.)
+TEST(RobustMutexTest, OwnerDeathIsRecoverable) {
+  const std::string shm_name = "/ihrs_test_robust_" + std::to_string(::getpid());
+  const int fd = ::shm_open(shm_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
+  ASSERT_NE(fd, -1);
+  ASSERT_EQ(::ftruncate(fd, 4096), 0);
+
+  auto* region = static_cast<std::byte*>(::mmap(nullptr, 4096, PROT_READ | PROT_WRITE,
+                                                MAP_SHARED, fd, 0));
+  ASSERT_NE(region, MAP_FAILED);
+  auto* mutex = new (region) pthread_mutex_t;
+
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+  pthread_mutexattr_setrobust(&attr, PTHREAD_MUTEX_ROBUST);
+  ASSERT_EQ(pthread_mutex_init(mutex, &attr), 0);
+  pthread_mutexattr_destroy(&attr);
+
+  // Lock and die (thread exit while holding the lock).
+  std::thread doomed([&] { ASSERT_EQ(pthread_mutex_lock(mutex), 0); });
+  doomed.join();
+
+  // The next lock must report owner death — not hang.
+  const int rc = pthread_mutex_lock(mutex);
+  EXPECT_EQ(rc, EOWNERDEAD);
+  ASSERT_EQ(pthread_mutex_consistent(mutex), 0);
+  EXPECT_EQ(pthread_mutex_unlock(mutex), 0);
+  EXPECT_EQ(pthread_mutex_lock(mutex), 0); // fully usable again
+  EXPECT_EQ(pthread_mutex_unlock(mutex), 0);
+
+  pthread_mutex_destroy(mutex);
+  ::munmap(region, 4096);
+  ::close(fd);
+  ::shm_unlink(shm_name.c_str());
 }
