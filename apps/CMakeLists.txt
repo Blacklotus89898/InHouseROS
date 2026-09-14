@@ -34,10 +34,13 @@ target_link_libraries(dual_shm_pubsub PRIVATE ihrs::ipc)
 
 # --- Network bridging demos (SHM <-> UDP / TCP) ---------------------------
 add_executable(udp_sender sender.cpp)
-target_link_libraries(udp_sender PRIVATE ihrs::ipc ihrs::transport)
+target_link_libraries(udp_sender PRIVATE ihrs::bridge)
 
 add_executable(udp_receiver receiver.cpp)
-target_link_libraries(udp_receiver PRIVATE ihrs::ipc ihrs::transport)
+target_link_libraries(udp_receiver PRIVATE ihrs::bridge)
+
+add_executable(bridge bridge.cpp)
+target_link_libraries(bridge PRIVATE ihrs::bridge)
 
 add_executable(tcp_sender tcpSender.cpp)
 target_link_libraries(tcp_sender PRIVATE ihrs::ipc ihrs::transport)

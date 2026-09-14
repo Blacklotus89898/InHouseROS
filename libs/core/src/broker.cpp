@@ -76,4 +76,34 @@ void Broker::setMaxPending(std::size_t max_pending) {
   max_pending_ = max_pending;
 }
 
+void Broker::register_topic_type(const std::string& topic, std::uint64_t hash) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  const auto [it, inserted] = type_bindings_.try_emplace(topic, TypeBinding{hash, 0});
+  if (!inserted && it->second.hash != hash) {
+    throw TypeMismatchError("topic '" + topic +
+                            "' is already bound to a different payload type");
+  }
+  ++it->second.refs;
+}
+
+void Broker::release_topic_type(const std::string& topic, std::uint64_t hash) noexcept {
+  std::lock_guard<std::mutex> lock(mutex_);
+  const auto it = type_bindings_.find(topic);
+  if (it == type_bindings_.end() || it->second.hash != hash) {
+    return;
+  }
+  if (--it->second.refs == 0) {
+    type_bindings_.erase(it);
+  }
+}
+
+std::optional<std::uint64_t> Broker::topic_type(const std::string& topic) const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  const auto it = type_bindings_.find(topic);
+  if (it == type_bindings_.end()) {
+    return std::nullopt;
+  }
+  return it->second.hash;
+}
+
 } // namespace ihrs::core

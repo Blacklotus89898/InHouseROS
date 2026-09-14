@@ -191,9 +191,12 @@ flowchart LR
 | Stage | Delivers | Size |
 | :- | :- | :- |
 | **1 — Foundations** ✅ *delivered* | `Context` (default global), executor timers, byte-span transport + TCP framing (`framing.hpp`, binary-safe receivers), `last_error()` accessors, robust SHM mutexes | S |
-| **2 — Unified topics** | `Context::create_node()`, typed `Pub<T>`/`Sub<T>` with QoS depth, `LocalTransport`, type-hash checking, `bridge` app for SHM/net forwarding | M–L |
+| **2 — Unified topics** ✅ *delivered* | `Context::create_node()`, typed `Pub<T>`/`Sub<T>` with QoS, compile-time codec gate, type-hash registry with `TypeMismatchError`, `ihrs::bridge` (SHM/UDP topic bridges) + config-driven `bridge` app | M–L |
 | **3 — SHM v2** | SPSC ring buffer, seq+timestamp, futex wakeup, liveness epoch; `GenericSHM` kept as compat shim | M |
 | **4 — Discovery & tooling** | Topic registry endpoint, `ihrs topics` CLI, latency/loss counters exposed, optional ZMQ-backed NetTransport | M |
+
+> **Status:** Stage 1 delivered (robust SHM mutexes included). Stage 2 has a
+> detailed working plan in [`stage2_plan.md`](stage2_plan.md).
 
 Sequencing logic: Stage 1 removes the singleton ceiling so Stage 2's
 transport registry has a home; Stage 2's QoS + type hashes are exactly the

@@ -114,6 +114,7 @@ See [`docs/`](docs/) for architecture notes and per-module documentation:
 | [`docs/architecture.md`](docs/architecture.md) | Full system architecture with Mermaid diagrams (context, layering, class models, sequences, memory layout, threading) |
 | [`docs/architecture_evolution.md`](docs/architecture_evolution.md) | Critical architecture review + target design and staged evolution plan |
 | [`docs/design_review.md`](docs/design_review.md) | Architecture & code design review: findings, resolutions, open risks, roadmap rationale |
+| [`docs/stage2_plan.md`](docs/stage2_plan.md) | Working plan for the next milestone: unified typed topics (`Pub<T>`/`Sub<T>`, QoS, bridge app) |
 | [`libs/core/README.md`](libs/core/README.md) | Broker / Publisher / Subscriber / Executor semantics |
 | [`libs/ipc/README.md`](libs/ipc/README.md) | Shared-memory pub/sub: ownership, lifecycle, limits |
 | [`libs/transport/README.md`](libs/transport/README.md) | Transport interface contract and selection guide |
@@ -129,7 +130,7 @@ Prioritized; the rationale behind each item is in
 - [x] Robust shared-memory mutexes (`EOWNERDEAD` recovery) + CI (GitHub Actions)
 - [x] Robotics algorithm library with tests
 - [ ] Lock-free SHM ring buffer (SPSC, condition-variable wakeup)
-- [ ] Generic `bridge_node` (SHM ↔ core ↔ transport)
+- [x] Generic typed bridge (`ihrs::bridge` + `bridge` app: SHM ↔ core ↔ UDP)
 - [ ] gRPC service calls, WebRTC video streaming
 
 ## License

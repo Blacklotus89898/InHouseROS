@@ -1,36 +1,31 @@
-#include <ihrs/transport/udp_receiver.hpp>
-#include <ihrs/ipc/shm_publisher.hpp>
+// Typed demo: framed UDP datagrams -> typed topic -> console.
+// Pair with udp_receiver's sibling udp_sender (this repo).
+#include <ihrs/bridge/udp_bridge.hpp>
+#include <ihrs/core/context.hpp>
+#include <ihrs/core/executor.hpp>
+
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <thread>
-#include <memory>
 
-using namespace ihrs::ipc;
-using namespace ihrs::transport;
+namespace {
+struct Text64 {
+    char text[64]{};
+};
+} // namespace
 
-int main() {
-    const char* shm_name = "/my_shm2";
-    size_t shm_size = 1024;
+int main(int argc, char** argv) {
+    const int port = argc > 1 ? std::stoi(argv[1]) : 9001;
 
-    std::shared_ptr<std::string> latest_udp_message = std::make_shared<std::string>("");
+    auto& ctx = ihrs::core::Context::global();
+    auto node = ctx.create_node("chat_receiver");
 
-    // Start the UDP receiver in a separate thread
-    UDPReceiver receiver(9001, [latest_udp_message](const std::string& msg) {
-        std::cout << "[UDPReceiver] Received: " << msg << std::endl;
-        *latest_udp_message = msg;
-    });
+    const auto sub = node.create_subscriber<Text64>(
+        "/chat", [](const Text64& msg) { std::cout << "received: " << msg.text << "\n"; });
+    ihrs::bridge::UdpTopicSource<Text64> source(node, "/chat", port);
 
-    std::thread udp_thread([&receiver]() {
-        receiver.run();  // Blocking call
-    });
-
-    // Shared memory publisher callback pulls the latest UDP message
-    SharedMemoryPublisher pub(shm_name, shm_size, [latest_udp_message](int) {
-        return *latest_udp_message;
-    });
-
-    pub.run();  // Blocking call, sends shared memory messages repeatedly
-
-    udp_thread.join();
+    std::cout << "chat_receiver listening on udp/" << port << " (Ctrl+C to exit)\n";
+    ihrs::core::Executor exec(ctx);
+    exec.spin(500.0); // blocks until stop(); Ctrl+C terminates the process
     return 0;
 }

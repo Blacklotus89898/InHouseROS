@@ -77,6 +77,7 @@ endif()
 add_subdirectory(libs/core)
 add_subdirectory(libs/ipc)
 add_subdirectory(libs/transport)
+add_subdirectory(libs/bridge)
 add_subdirectory(libs/algo)
 
 # ---------------------------------------------------------------------------

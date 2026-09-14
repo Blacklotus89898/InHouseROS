@@ -4,13 +4,23 @@
 #include <cstdint>
 #include <functional>
 #include <mutex>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "ihrs/core/message.hpp"
 
 namespace ihrs::core {
+
+/// Thrown when an endpoint binds a payload type to a topic that is already
+/// bound to a different payload type (typed API, see type_support.hpp).
+class TypeMismatchError : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
 
 /// Thread-safe in-process publish/subscribe broker.
 ///
@@ -63,18 +73,37 @@ public:
   /// with publish()/spinOnce().
   void setMaxPending(std::size_t max_pending);
 
-private:
-    Broker() = default;
-    friend class Context; // only Context may construct a broker
+  /// --- Typed-topic registry (see type_support.hpp) --------------------
 
-    struct Subscription {
+  /// Binds a payload type hash to a topic (ref-counted). Throws
+  /// TypeMismatchError if the topic is bound to a different hash.
+  void register_topic_type(const std::string& topic, std::uint64_t hash);
+
+  /// Releases one reference taken by register_topic_type(); the binding
+  /// is removed at zero references. Unknown pairs are ignored.
+  void release_topic_type(const std::string& topic, std::uint64_t hash) noexcept;
+
+  /// The bound hash for a topic, or nullopt if unbound.
+  [[nodiscard]] std::optional<std::uint64_t> topic_type(const std::string& topic) const;
+
+private:
+  Broker() = default;
+  friend class Context; // only Context may construct a broker
+
+  struct Subscription {
     Token id;
     Callback cb;
+  };
+
+  struct TypeBinding {
+    std::uint64_t hash;
+    std::size_t refs;
   };
 
   mutable std::mutex mutex_;
   std::unordered_map<std::string, std::vector<Subscription>> subscribers_;
   std::vector<std::function<void()>> queue_;
+  std::unordered_map<std::string, TypeBinding> type_bindings_;
   Token next_token_ = 1;
   std::size_t max_pending_ = kDefaultMaxPending;
   std::size_t dropped_ = 0;

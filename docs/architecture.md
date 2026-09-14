@@ -179,6 +179,40 @@ flowchart LR
 variable, so a 1 Hz loop stops within microseconds instead of sleeping a full
 cycle. `spin()` must not be stopped from its own thread (see the class docs).
 
+### 3.4 Typed topic API and bridges (Stage 2)
+
+The typed layer is a thin wrapper over the broker: `Pub<T>::publish(const T&)`
+wraps the payload in a type-tagged `TypedMessage<T>` and enqueues through the
+same broker path; `Sub<T>` unwraps and forwards `const T&` to user code.
+Payload types must be trivially copyable (auto memcpy codec) or provide a
+`Codec<T>` specialization — enforced at compile time. Each topic binds one
+payload type hash in the broker; conflicts throw `TypeMismatchError`.
+
+`ihrs::bridge` composes the messaging libraries into ready-made forwarding
+endpoints, so no application hand-wiring is needed:
+
+```mermaid
+flowchart LR
+    subgraph PROC["one process"]
+        PUB["Pub&lt;Imu&gt;
+/imu"] --> BROKER["Broker"]
+        BROKER --> SUB1["Sub&lt;Imu&gt;"]
+        SUB1 --> SHMSINK["ShmTopicSink
+latest-value"]
+        SUB1 --> UDPSINK["UdpTopicSink
+framed datagrams"]
+        BROKER --> SUBOUT["Sub&lt;Imu&gt; (/in)"]
+    end
+    SHMSINK --> SHM["/dev/shm segment"]
+    SHM --> SHMSRC["ShmTopicSource"] --> BROKER
+    UDPSINK -->|UDP| NET["network"]
+    NET --> UDPSRC["UdpTopicSource"] --> BROKER
+```
+
+The `bridge` app maps topics to endpoints from the command line over a
+per-binary type registry (`--shm-out topic:segment:Type`,
+`--udp-in topic:port:Type`, ...).
+
 ## 4. IPC: shared-memory pub/sub
 
 ### 4.1 Segment layout
