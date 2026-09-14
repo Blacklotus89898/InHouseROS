@@ -1,123 +1,137 @@
 # InHouseROS
 
-![Language](https://img.shields.io/badge/language-C%2B%2B-blue.svg)
+![Language](https://img.shields.io/badge/language-C%2B%2B20-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Build](https://img.shields.io/badge/build-CMake%20%2B%20Presets-064F8C.svg)
 
-**A high-performance, lightweight Robot Operating System implementation aimed at removing the abstraction overhead of standard ROS.**
+**A high-performance, lightweight robotics middleware and algorithm library — a ground-up
+alternative to ROS with minimal dependencies and a clean, modern C++20 codebase.**
 
-## 🚀 Motivation
-Standard ROS is powerful but often introduces heavy dependencies and abstraction layers that can limit performance on constrained hardware. **InHouseROS** was built to:
-* **Maximize Performance:** Direct memory manipulation without serialization overhead where possible.
-* **Minimize Dependencies:** Avoid the "dependency hell" of massive meta-packages.
-* **Enhance Learning:** A ground-up implementation of robotics communication paradigms.
+## Why
 
----
+Standard ROS is powerful but heavy. InHouseROS maximizes performance (direct shared-memory
+IPC without serialization overhead), minimizes dependency hell, and doubles as a learning
+codebase for robotics communication and algorithms.
 
-## 🏗 Architecture
-InHouseROS utilizes a **Hybrid Communication Strategy** to balance speed and reach:
+## Architecture
 
-| Scope | Technology | Latency | Use Case |
-| :--- | :--- | :--- | :--- |
-| **Local Node-to-Node** | **POSIX Shared Memory + Mutex** | Ultra-Low | High-frequency sensor data (IMU, Encoders) between processes on the same CPU. |
-| **Network Control** | **ZeroMQ / gRPC** | Low | Control commands, state estimation updates between robot and controller. |
-| **Data Streaming** | **WebRTC / TCP / UDP** | Medium | Video feeds, point clouds, and telemetry. |
-| **Fleet Management** | **MQTT** | High | Low-frequency status updates, logging, and fleet coordination. |
+A **hybrid communication strategy** balances speed and reach:
 
----
+| Scope | Technology | Library | Latency | Use case |
+| :--- | :--- | :--- | :--- | :--- |
+| Local node-to-node | POSIX SHM + mutex | `ihrs::ipc` | Ultra-low | High-frequency sensor data (IMU, encoders) |
+| In-process pub/sub | Broker + Executor | `ihrs::core` | Low | Nodes, topics, callback scheduling |
+| Network control | TCP / UDP / ZeroMQ* | `ihrs::transport` | Low | Control commands, state estimates |
+| Data streaming | WebRTC* | `ihrs::transport` | Medium | Video, point clouds, telemetry |
+| Fleet management | MQTT* | `ihrs::transport` | Higher | Low-frequency status, fleet coordination |
 
-## 📂 Project Structure
-```text
+\* optional — compiled only when the dependency is found (`cppzmq`, Paho C++, libdatachannel).
+
+`ihrs::algo` provides the robotics algorithm toolbox: planning (A*, RRT, RRT*, PRM),
+control (PID, pure pursuit, MPC), localization (Kalman, particle filter), kinematics
+(2–6 DOF arms), perception (occupancy/voxel grids), and decision making (FSM, MDP).
+
+## Project layout
+
+```
 .
-├── bin/                  # Compiled executables
-├── include/              # Header files (SHM, TCP/UDP, WebRTC wrappers)
-├── src/
-│   ├── comms/            # Raw TCP/UDP socket implementations
-│   ├── mqtt/             # Mosquitto pub/sub implementation & Docker config
-│   ├── programs/         # Entry points (main nodes, test scripts)
-│   ├── pubSub/           # Shared Memory logic (Core IPC)
-│   ├── webrtc/           # WebRTC Data Channels (Caller/Callee)
-│   └── zmq/              # ZeroMQ implementation
-└── tests/                # Unit and integration tests
+├── CMakeLists.txt        # Superproject: options, deps, subdirectories
+├── CMakePresets.json     # debug / release / sanitize / minimal presets
+├── cmake/                # Shared CMake helpers
+├── libs/
+│   ├── core/             # ihrs::core      Node, Executor, Broker, topics
+│   ├── ipc/              # ihrs::ipc       POSIX shared-memory pub/sub
+│   ├── transport/        # ihrs::transport TCP/UDP (+ optional ZMQ/MQTT/WebRTC)
+│   └── algo/             # ihrs::algo      Robotics algorithms (+ Eigen, SDL2 viz)
+├── apps/                 # Demo nodes, bridges and operator tools
+├── tests/                # GTest unit tests (ctest)
+├── third_party/          # (vendored deps land here)
+├── docs/                 # Architecture and design notes
+└── archive/              # Preserved experiments (not built)
 ```
-## 🛠️ Technology Stack
-Language: C++ (Core logic), C/Rust/Zig (Potential future additions)
 
-IPC: POSIX Shared Memory, Pthreads, Mutexes
+## Building
 
-Messaging: ZeroMQ (0MQ), MQTT (Mosquitto)
+Requirements: GCC 11+ / Clang 14+, CMake 3.21+, make, pthreads.
+Optional: SDL2 (visualizers), cppzmq, Paho C++ (mqtt), libdatachannel (webrtc).
 
-Streaming: Libdatachannel (WebRTC), Raw TCP/UDP Sockets
+```bash
+# Configure + build (pick a preset)
+cmake --preset debug
+cmake --build --preset debug -j
 
-## ⚡ Getting Started
-Prerequisites
-Ensure you have the following libraries installed (Ubuntu/Debian example):
+# Run the test suite
+ctest --preset debug
 
-```Bash
-
-# Core build tools
-sudo apt install build-essential cmake
-
-# Communication dependencies
-sudo apt install libzmq3-dev libmosquitto-dev
-
-# WebRTC (Libdatachannel)
-# Requires building from source or adding specific PPA
-Building the Project
-Bash
-
-# Compile the core system
-make
-
-# Compile specific modules
-make publisher
-make subscriber
-Running the Simulation (IPC Demo)
-This demonstrates the Shared Memory Pub/Sub logic:
-
-Bash
-
-make test
-# Output:
-# [Publisher] Sent: [Pub1] Count: 0
-# Sub1 received: [Pub1] Count: 0
-Running Network Nodes
-To run the WebRTC or TCP nodes:
-
-Bash
-
-# Terminal 1
-./bin/receiver
-
-# Terminal 2
-./bin/sender
+# Other presets
+cmake --preset release && cmake --build --preset release -j   # optimized
+cmake --preset sanitize && cmake --build --preset sanitize -j # ASan/UBSan
+cmake --preset minimal  && cmake --build --preset minimal -j  # no optional deps
 ```
-## ✅ Feature Roadmap & TODO
-### Core  Infrastructure
-- [x] Shared Memory Pub/Sub: Efficient local IPC.
 
- - [x] Wrapper Interface: Unified API to initiate publishers/subscribers.
+Binaries land in `build/<preset>/bin`, libraries in `build/<preset>/lib`.
 
- - [x] Multi-Node Support: Single process handling multiple Pubs/Subs.
+## Quick start
 
- - [ ] Robust Mutexes: Handle crash recovery (prevent deadlocks if a node dies).
+```bash
+# In-process pub/sub (core middleware)
+./build/debug/bin/odometry_node
 
- - [ ] Lock-Free Queue: Implement a ring buffer for higher throughput.
+# Shared-memory publisher / subscriber (two terminals)
+./build/debug/bin/shm_publisher /demo_shm
+./build/debug/bin/shm_subscriber /demo_shm
 
-###  Networking & Remote Control
- - [x] TCP/UDP Layer: Basic packet transmission.
+# Inspect topics
+./build/debug/bin/topic_viewer odom
+```
 
- - [x] WebRTC Data Channels: Browser-compatible data streaming.
+## Using the libraries
 
- - [x] MQTT Integration: Dockerized Mosquitto broker setup.
+```cpp
+#include <ihrs/core/publisher.hpp>
+#include <ihrs/core/subscriber.hpp>
+#include <ihrs/core/executor.hpp>
 
- - [ ] gRPC Interface: Strict typing for service calls.
+struct Pose2DMsg : ihrs::core::Message { double x, y, theta; };
 
- - [ ] Video Streaming: Implement webrtc video stream for camera feed.
+int main() {
+    using namespace ihrs::core;
+    Subscriber sub("odom", [](MessagePtr msg) {
+        auto p = std::static_pointer_cast<Pose2DMsg>(msg);
+        // consume pose...
+    });
+    Publisher pub("odom");
+    pub.publish(std::make_shared<Pose2DMsg>());
+    Broker::instance().spinOnce();
+}
+```
 
-### Tooling & Usability
- - [ ] Parameter Server: Dynamic configuration loading.
+See [`docs/`](docs/) for architecture notes and per-module documentation:
 
- - [ ] Process Manager: tmux script or simple daemon to manage node lifecycle.
+| Document | Contents |
+| :--- | :--- |
+| [`docs/architecture.md`](docs/architecture.md) | Full system architecture with Mermaid diagrams (context, layering, class models, sequences, memory layout, threading) |
+| [`docs/architecture_evolution.md`](docs/architecture_evolution.md) | Critical architecture review + target design and staged evolution plan |
+| [`docs/design_review.md`](docs/design_review.md) | Architecture & code design review: findings, resolutions, open risks, roadmap rationale |
+| [`libs/core/README.md`](libs/core/README.md) | Broker / Publisher / Subscriber / Executor semantics |
+| [`libs/ipc/README.md`](libs/ipc/README.md) | Shared-memory pub/sub: ownership, lifecycle, limits |
+| [`libs/transport/README.md`](libs/transport/README.md) | Transport interface contract and selection guide |
 
- - [ ] Monitoring Dashboard: TUI or Web GUI to visualize active nodes and rates.
+## Roadmap
+
+Prioritized; the rationale behind each item is in
+[`docs/design_review.md`](docs/design_review.md).
+
+- [x] Shared-memory pub/sub with unified wrapper API
+- [x] In-process broker/executor middleware (RAII subscriptions, bounded queue, prompt-stop executor)
+- [x] TCP/UDP transports behind a common `PacketSender` interface with stoppable receivers
+- [x] Robotics algorithm library with tests
+- [ ] Crash-safe SHM mutexes (robust mutex + `EOWNERDEAD` recovery)
+- [ ] Lock-free SHM ring buffer (SPSC, condition-variable wakeup)
+- [ ] Generic `bridge_node` (SHM ↔ core ↔ transport)
+- [ ] gRPC service calls, WebRTC video streaming
+
+## License
+
+MIT — see [LICENSE](LICENSE).
