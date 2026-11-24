@@ -70,19 +70,18 @@ safety), **low** (style/maintainability).
 
 ### Design tensions worth knowing
 
-1. **Singleton broker vs. testability.** `Broker::instance()` is pragmatic but
-   global state. The tests tolerate it today because topics are namespaced;
-   if it starts to hurt, introduce `ihrs::core::Context` (a broker owner
-   passed to Publisher/Subscriber/Executor, defaulting to the global one) —
-   the token-based API already supports this without breaking users.
+1. **Singleton broker vs. testability.** ~~If it starts to hurt, introduce
+   `ihrs::core::Context`.~~ **Resolved (Stage 1):** `Context` exists;
+   `Context::global()` preserves the simple default and local contexts give
+   real isolation/DI (covered by tests).
 2. **String payloads in `SharedMemoryPublisher`.** The 1 KB fixed-layout
    string segment is a demo-grade protocol. Typed `GenericSHM<T>` is the
-   production path; consider deprecating the string API once a bridge node
-   exists.
-3. **Middleware ↔ transport seam.** Apps currently hand-wire bridges
-   (SHM → UDP). The natural next step is a generic `bridge_node` in `apps`
-   built on `core::Node` + both libraries; no library change is required
-   because `transport` deliberately does not depend on `core`.
+   production path. **Stage 2 delivered the bridge**, so the deprecation
+   precondition is met: mark the string API demo-only and migrate the last
+   legacy apps during Stage 3.
+3. **Middleware ↔ transport seam.** ~~Apps hand-wire bridges.~~
+   **Resolved (Stage 2):** `ihrs::bridge` + the config-driven `bridge` app
+   own all forwarding; the hand-wired `sender`/`receiver` glue is gone.
 4. **Message copy cost.** `publish()` copies the `shared_ptr` per subscriber
    under the broker lock. For high-rate large payloads, prefer
    shared-payload messages (an inner const struct) so the copy stays cheap —

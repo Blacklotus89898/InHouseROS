@@ -195,8 +195,9 @@ flowchart LR
 | **3 — SHM v2** | SPSC ring buffer, seq+timestamp, futex wakeup, liveness epoch; `GenericSHM` kept as compat shim | M |
 | **4 — Discovery & tooling** | Topic registry endpoint, `ihrs topics` CLI, latency/loss counters exposed, optional ZMQ-backed NetTransport | M |
 
-> **Status:** Stage 1 delivered (robust SHM mutexes included). Stage 2 has a
-> detailed working plan in [`stage2_plan.md`](stage2_plan.md).
+> **Status:** Stages 1–2 delivered. **Stage 3 is next** — working plan in
+> [`stage3_plan.md`](stage3_plan.md) (Stage 2's plan remains in
+> [`stage2_plan.md`](stage2_plan.md) for reference).
 
 Sequencing logic: Stage 1 removes the singleton ceiling so Stage 2's
 transport registry has a home; Stage 2's QoS + type hashes are exactly the
