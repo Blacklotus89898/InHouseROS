@@ -4,6 +4,7 @@
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Build](https://img.shields.io/badge/build-CMake%20%2B%20Presets-064F8C.svg)
+[![CI](https://github.com/Blacklotus89898/InHouseROS/actions/workflows/ci.yml/badge.svg)](https://github.com/Blacklotus89898/InHouseROS/actions/workflows/ci.yml)
 
 **A high-performance, lightweight robotics middleware and algorithm library — a ground-up
 alternative to ROS with minimal dependencies and a clean, modern C++20 codebase.**
@@ -134,6 +135,21 @@ Prioritized; the rationale behind each item is in
 - [x] Generic typed bridge (`ihrs::bridge` + `bridge` app: SHM ↔ core ↔ UDP)
 - [ ] Topic discovery & `ihrs topics` introspection CLI (Stage 4)
 - [ ] gRPC service calls, WebRTC video streaming
+
+## Design docs
+
+| Doc | What it covers |
+|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | Current architecture |
+| [`docs/design_review.md`](docs/design_review.md) | Review behind the roadmap's priorities |
+| [`docs/stage3_plan.md`](docs/stage3_plan.md) | Current stage: lock-free SHM v2 ring buffer |
+| [`docs/v2_design.md`](docs/v2_design.md), [`docs/stage2_plan.md`](docs/stage2_plan.md) | Earlier stage designs |
+| [`docs/architecture_evolution.md`](docs/architecture_evolution.md) | How the design got here |
+| [`docs/algorithms_notes.md`](docs/algorithms_notes.md) | Notes on the algorithm library |
+
+## Contributing
+
+Read [AGENTS.md](AGENTS.md) first — it is the guide for humans and coding agents alike: commands, layout, the rules that must not break, how to add a feature and how changes ship.
 
 ## License
 
